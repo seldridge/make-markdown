@@ -24,7 +24,6 @@ vpath %.md $(DIR_SRC)
 
 # Default target.
 all: $(TARGETS_HTML) refresh-conkeror
-	echo $(SOURCES_MD)
 
 # HTML build rule
 $(DIR_BUILD)/%.html: %.md Makefile
