@@ -1,0 +1,21 @@
+#! /bin/sh
+
+# Tries to find one of the following markdown interpreters in your
+# PATH. Otherwise, will fail.
+#   * `gfm` -- Github-Flavored Markdown
+#   * `markdown` -- Daring Fireball Markdown
+
+if [[ $# -ne 1 ]]; then
+    echo "Usage:"
+    echo "  ./markdown-chooser [input file]"
+    exit 1
+fi
+
+if [[ -n `which gfm 2> /dev/null` ]]; then
+    cat $1 | gfm
+elif [[ -n `which markdown 2> /dev/null` ]]; then
+    markdown $1
+else
+    echo "Cannot find a suitable Markdown parser on your Path!"
+    exit 1
+fi
