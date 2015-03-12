@@ -22,9 +22,7 @@ vpath %.md $(DIR_SRC)
 #--------------------------------------- Build rules
 .PHONY: all clean refresh-conkeror
 
-# Default target. This should either be set to build all targets with
-# LaTeX formatting cleanup (format-build) OR to just build without
-# cleanup (noformat-build)
+# Default target.
 all: $(TARGETS_HTML) refresh-conkeror
 	echo $(SOURCES_MD)
 
