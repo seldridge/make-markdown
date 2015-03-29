@@ -27,7 +27,7 @@ all: $(TARGETS_HTML) refresh-conkeror
 
 # HTML build rule
 $(DIR_BUILD)/%.html: %.md Makefile
-	if [ -d $(shell echo $@ | grep -o "^.\+/") ]; then echo $@ | grep -o "^.\+/" | xargs mkdir -p; fi
+	if [ ! -d $(shell echo $@ | grep -o "^.\+/") ]; then echo $@ | grep -o "^.\+/" | xargs mkdir -p; fi
 	$(DIR_SCRIPTS)/markdown-chooser $< > $@
 
 # This will send key "r" to all instances of `conkeror` using the
@@ -39,4 +39,4 @@ refresh-conkeror:
 	xdotool search "conkeror" | xargs -I WIN xdotool key --window WIN r; fi
 
 clean:
-	rm -f $(DIR_BUILD)/*
+	rm -rf $(DIR_BUILD)/*
