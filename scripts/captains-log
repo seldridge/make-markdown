@@ -1,0 +1,46 @@
+#! /bin/sh
+
+# Acts as a front-end for storing daily notes.
+
+# The editor to use
+editor=$EDITOR
+
+# Query `date` to get the year, month, and day. This has a built in
+# offset to try and keep things grouped by working days.
+HOUR_OFFSET=-4
+YEAR=`date -d "$HOUR_OFFSET hour" +%Y`
+MONTH=`date -d "$HOUR_OFFSET hour" +%m`
+DAY=`date -d "$HOUR_OFFSET hour" +%d`
+WHOAMI=`whoami`
+# Figure out what directory this script is in
+#DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd | sed 's/\/scripts$//' )
+DIR=/home/se/projects/make-markdown
+DIR_SRC=$DIR/src/captains-log
+
+echo "Today is $YEAR-$MONTH-$DAY in $DIR"
+
+# Setup the files that we care about
+DIR_LOG=$DIR_SRC/$YEAR/$YEAR-$MONTH
+LOG=$DIR_LOG/$YEAR-$MONTH-$DAY.md
+
+# If the files don't exist, then create them
+if [ ! -e $LOG ]; then
+    mkdir -p $DIR_LOG
+    touch $LOG
+    echo "# $YEAR.$MONTH.$DAY | $WHOAMI" > $LOG
+fi
+$editor $LOG
+
+# Take the 30 most recent entries and put them into a file called
+# recent.md increasing every header that we see by one.
+echo "# Captain's Log " > $DIR_SRC/recent.md
+echo "--------------------" >> $DIR_SRC/recent.md
+echo "Recent Entries" >> $DIR_SRC/recent.md
+find $DIR_SRC/*/ | \
+    grep md$ | \
+    sort -nr | \
+    head -n 30 | \
+    xargs -n 1 sed 's/^#/##/' >> $DIR_SRC/recent.md
+
+# Rebuild the log
+make -C $DIR

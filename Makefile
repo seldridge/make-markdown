@@ -9,7 +9,7 @@ DIR_SRC     = src
 DIR_SCRIPTS = scripts
 
 # The sources are anything inside the src directory that match *.md
-SOURCES_MD  = $(shell ls $(DIR_SRC)/*.md | sed 's/$(DIR_SRC)\///')
+SOURCES_MD  = $(shell find $(DIR_SRC) -regex .+\.md$ | sed 's/$(DIR_SRC)\///')
 
 # The targets are all the sources with an
 TARGETS_HTML= $(SOURCES_MD:%.md=$(DIR_BUILD)/%.html)
@@ -27,6 +27,7 @@ all: $(TARGETS_HTML) refresh-conkeror
 
 # HTML build rule
 $(DIR_BUILD)/%.html: %.md Makefile
+	if [ -d $(shell echo $@ | grep -o "^.\+/") ]; then echo $@ | grep -o "^.\+/" | xargs mkdir -p; fi
 	$(DIR_SCRIPTS)/markdown-chooser $< > $@
 
 # This will send key "r" to all instances of `conkeror` using the
