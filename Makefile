@@ -8,15 +8,18 @@ DIR_BUILD   = build
 DIR_SRC     = src
 DIR_SCRIPTS = scripts
 
-# The sources are anything inside the src directory that match *.md
-SOURCES_MD  = $(shell find $(DIR_SRC) -regex .+\.md$ | sed 's/$(DIR_SRC)\///')
+# The sources are anything inside the src directory or in the
+# top-level directory (due to the way GitHub handles wikis) that
+# matches *.md
+SOURCES_MD  = $(shell find $(DIR_SRC) -regex .+\.md$ | sed 's/$(DIR_SRC)\///') \
+	$(shell find -maxdepth 1 -regex .+\.md$)
 
 # The targets are all the sources with an
 TARGETS_HTML= $(SOURCES_MD:%.md=$(DIR_BUILD)/%.html)
 
 SPACE       = $(EMPTY) $(EMPTY)
 
-vpath %.md $(DIR_SRC)
+vpath %.md $(DIR_SRC) .
 
 
 #--------------------------------------- Build rules
