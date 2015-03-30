@@ -40,7 +40,7 @@ find $DIR_SRC/*/ | \
     grep md$ | \
     sort -nr | \
     head -n 30 | \
-    xargs -n 1 sed 's/^#/##/' >> $DIR_SRC/recent.md
+    xargs -n 1 sed -e 's/^#/##/' -e '$a\\' >> $DIR_SRC/recent.md
 
 # Rebuild the log
 make -C $DIR
