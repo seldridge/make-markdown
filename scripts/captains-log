@@ -13,8 +13,8 @@ MONTH=`date -d "$HOUR_OFFSET hour" +%m`
 DAY=`date -d "$HOUR_OFFSET hour" +%d`
 WHOAMI=`whoami`
 # Figure out what directory this script is in
-#DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd | sed 's/\/scripts$//' )
-DIR=/home/se/projects/make-markdown
+DIR=$( cd "$( readlink -f "${BASH_SOURCE[0]}" | xargs dirname )" && \
+             pwd | sed 's/\/scripts$//' )
 DIR_SRC=$DIR/src/captains-log
 
 echo "Today is $YEAR-$MONTH-$DAY in $DIR"
