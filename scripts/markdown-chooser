@@ -11,8 +11,8 @@ if [[ $# -ne 1 ]]; then
     exit 1
 fi
 
-if [[ -n `which gfm 2> /dev/null` ]]; then
-    cat $1 | gfm
+if [[ -n `which marked 2> /dev/null` ]]; then
+    marked $1
 elif [[ -n `which markdown 2> /dev/null` ]]; then
     markdown $1
 else

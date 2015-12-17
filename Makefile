@@ -7,6 +7,7 @@
 DIR_BUILD   = build
 DIR_SRC     = src
 DIR_SCRIPTS = scripts
+CSS         = $(DIR_SRC)/ghf_marked.css
 
 # The sources are anything inside the src directory or in the
 # top-level directory (due to the way GitHub handles wikis) that
@@ -26,12 +27,15 @@ vpath %.md $(DIR_SRC) .
 .PHONY: all clean refresh-conkeror
 
 # Default target.
-all: $(TARGETS_HTML) refresh-conkeror
+all: $(TARGETS_HTML) refresh-conkeror refresh-luakit
 
 # HTML build rule
 $(DIR_BUILD)/%.html: %.md Makefile
 	if [ ! -d $(shell echo $@ | grep -o "^.\+/") ]; then echo $@ | grep -o "^.\+/" | xargs mkdir -p; fi
-	$(DIR_SCRIPTS)/markdown-chooser $< > $@
+	echo "<style>/*" > $@;
+	cat $(CSS) >> $@;
+	echo "</style><div class="md"><article>" >> $@;
+	$(DIR_SCRIPTS)/markdown-chooser $< >> $@
 
 # This will send key "r" to all instances of `conkeror` using the
 # `xdotool`. I like to keep `conkeror` running beside my `emacs`. This
@@ -40,6 +44,10 @@ $(DIR_BUILD)/%.html: %.md Makefile
 refresh-conkeror:
 	if [[ `pidof -x conkeror` ]]; then \
 	xdotool search "conkeror" | xargs -I WIN xdotool key --window WIN r; fi
+
+refresh-luakit:
+	if [[ `pidof -x luakit` ]]; then \
+	xdotool search "luakit" | xargs -I WIN xdotool key --window WIN r; fi
 
 clean:
 	rm -rf $(DIR_BUILD)/*
