@@ -21,9 +21,12 @@ all the log *.md to *.html.
 
 ### Markdown Chooser - `scripts/markdown-chooser`
 
-Used by the Makefile to try and find either `gfm`, a GitHub-Flavored
-Markdown parser (part of
-[Docter](https://github.com/alampros/Docter)), or `markdown` (see
+Used by the Makefile to try and find either `marked` (part of
+[marked](https://github.com/chjj/marked)), or `markdown` (see
 [Daring Fireball Markdown](http://daringfireball.net/projects/markdown/)).
 This consequently depends on you having one of these available in your
 $PATH.
+
+### Pygmentize Helper - `scripts/scrub-pygmentize`
+
+Syntax highlighting is unsupported from the CLI of `marked` and `markdown` has no support for this. Syntax highlighting is accomplished with a special script that will look for any code blocks in the source markdown files and use [Pygments](http://pygments.org/) to replace them with colorized HTML regions.

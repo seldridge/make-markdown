@@ -16,7 +16,8 @@ SOURCES_MD  = $(shell find $(DIR_SRC) -regex .+\.md$ | sed 's/$(DIR_SRC)\///') \
 	$(shell find -maxdepth 1 -regex .+\.md$)
 
 # The targets are all the sources with an
-TARGETS_HTML= $(SOURCES_MD:%.md=$(DIR_BUILD)/%.html)
+TARGETS_MD_PYGMENTIZE = $(SOURCES_MD:%.md=$(DIR_BUILD)/%.md.pygmentize)
+TARGETS_HTML = $(TARGETS_MD_PYGMENTIZE:%.md.pygmentize=%.html)
 
 SPACE       = $(EMPTY) $(EMPTY)
 
@@ -27,11 +28,16 @@ vpath %.md $(DIR_SRC) .
 .PHONY: all clean refresh-conkeror
 
 # Default target.
-all: $(TARGETS_HTML) refresh-conkeror refresh-luakit
+# all: $(TARGETS_HTML) refresh-conkeror refresh-luakit
+all: $(TARGETS_HTML)
+
+# Pygmentize preprocessing
+$(DIR_BUILD)/%.md.pygmentize: %.md Makefile
+	if [ ! -d $(shell echo $@ | grep -o "^.\+/") ]; then echo $@ | grep -o "^.\+/" | xargs mkdir -p; fi
+	$(DIR_SCRIPTS)/scrub-pygmentize $< > $@
 
 # HTML build rule
-$(DIR_BUILD)/%.html: %.md Makefile
-	if [ ! -d $(shell echo $@ | grep -o "^.\+/") ]; then echo $@ | grep -o "^.\+/" | xargs mkdir -p; fi
+$(DIR_BUILD)/%.html: $(DIR_BUILD)/%.md.pygmentize Makefile
 	echo "<style>/*" > $@;
 	cat $(CSS) >> $@;
 	echo "</style><div class="md"><article>" >> $@;

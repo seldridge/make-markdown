@@ -1,0 +1,43 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+
+sub usage() {
+    print "Usage: scrub-pygmentize FILE\n";
+}
+
+if ($#ARGV != 0) {
+    usage() and die "Bad input arguments";
+}
+
+open(FILE, "<", $ARGV[0]) or die "Unable to open $ARGV[0]";
+
+my $in_code_block = 0;
+my $language = "";
+my $code_block;
+while (<FILE>) {
+    if ($_ =~ /``` ?(\w*)?/ and not $in_code_block) {
+        $in_code_block = 1;
+        $language = $1;
+        $code_block = "";
+        next;
+    }
+    elsif ($_ =~ /```/) {
+        $in_code_block = 0;
+
+        my $language_arg = ($language) ? "-l $language" : "";
+        my @args = ("echo '$code_block' | pygmentize -f html $language_arg");
+        system(@args) == 0 or die "Bad system call";
+
+        next;
+    }
+    elsif (not $in_code_block) {
+        print $_;
+        next;
+    }
+
+    $code_block = $code_block.$_;
+}
+
+close FILE;
