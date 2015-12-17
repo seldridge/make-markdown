@@ -28,8 +28,7 @@ vpath %.md $(DIR_SRC) .
 .PHONY: all clean refresh-conkeror
 
 # Default target.
-# all: $(TARGETS_HTML) refresh-conkeror refresh-luakit
-all: $(TARGETS_HTML)
+all: $(TARGETS_HTML) refresh-conkeror refresh-luakit
 
 # Pygmentize preprocessing
 $(DIR_BUILD)/%.md.pygmentize: %.md Makefile
