@@ -27,7 +27,7 @@ while (<FILE>) {
         $in_code_block = 0;
 
         my $language_arg = ($language) ? "-l $language" : "";
-        my @args = ("echo '$code_block' | pygmentize -f html $language_arg");
+        my @args = ("echo \"$code_block\" | pygmentize -f html $language_arg");
         system(@args) == 0 or die "Bad system call";
 
         next;
