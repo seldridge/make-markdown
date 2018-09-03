@@ -12,6 +12,7 @@ daily log or a personal blog).
 Known dependencies can be cleared (on Ubuntu) with:
 ```bash
 apt install pandoc
+git submodule update --init
 ```
 
 ### Scripts
