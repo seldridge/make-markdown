@@ -16,45 +16,131 @@
 #-------------------------------------------------------------------------------
 # Acts as a front-end for storing daily notes.
 
-# The editor to use
+# Top level configuration
+title="Captain's Log"
 editor=$EDITOR
+browser=$BROWSER
 
 # Query `date` to get the year, month, and day. This has a built in
 # offset to try and keep things grouped by working days.
-HOUR_OFFSET=-4
-YEAR=`date -d "$HOUR_OFFSET hour" +%Y`
-MONTH=`date -d "$HOUR_OFFSET hour" +%m`
-DAY=`date -d "$HOUR_OFFSET hour" +%d`
 WHOAMI=`whoami`
 # Figure out what directory this script is in
 DIR=$( cd "$( readlink -f "${BASH_SOURCE[0]}" | xargs dirname )" && \
              pwd | sed 's/\/scripts$//' )
 DIR_SRC=$DIR/src/captains-log
 
-echo "Today is $YEAR-$MONTH-$DAY in $DIR"
+function help() {
+    cat <<EOF
+Usage: ${0##*/} [OPTION]... [DATE]
+Open a Captain's Log for the DATE (today by default). DATE format must be
+YYYY-MM-DD.
 
-# Setup the files that we care about
-DIR_LOG=$DIR_SRC/$YEAR/$YEAR-$MONTH
-LOG=$DIR_LOG/$YEAR-$MONTH-$DAY.md
+Options:
+  -b BROWSER                 use BROWSER with the -o option
+  -e EDITOR                  use EDITOR to open the file (default: '\$EDITOR')
+  -h                         show this help text
+  -o                         open summary in a browser (default: '\$BROWSER')
+  -t TITLE                   use TITLE for log title (default: '$title')
+EOF
+}
+
+function open() {
+    $BROWSER $DIR/build/captains-log/recent.html
+}
+
+function build() {
+    make -C $DIR
+}
+
+function init() {
+    if [ $1 ]; then
+        DAY=${1##*-}
+        month_day=${1#*-}
+        MONTH=${month_day%%-*}
+        YEAR=${1%%-*}
+        echo $YEAR | grep -e '^[0-9]\{4\}$' -q
+        if [ $? -eq 1 ]; then
+            echo "Invalid YEAR ('$YEAR') in DATE, should be 4 numbers (did you misspell it?)" >&2
+            exit 1
+        fi
+        echo $MONTH | grep -e '^[0-9]\{2\}$' -q
+        if [ $? -eq 1 ]; then
+            echo "Invalid MONTH ('$MONTH') in DATE, should be 2 numbers (did you misspell it?)" >&2
+            exit 1
+        fi
+        echo $DAY | grep -e '^[0-9]\{2\}$' -q
+        if [ $? -eq 1 ]; then
+            echo "Invalid DAY ('$DAY') in DATE, should be 2 numbers, got '$DAY' (did you misspell it?)" >&2
+            exit 1
+        fi
+    else
+        HOUR_OFFSET=-4
+        YEAR=`date -d "$HOUR_OFFSET hour" +%Y`
+        MONTH=`date -d "$HOUR_OFFSET hour" +%m`
+        DAY=`date -d "$HOUR_OFFSET hour" +%d`
+    fi
+    # Setup the files that we care about
+    DIR_LOG=$DIR_SRC/$YEAR/$MONTH
+    LOG=$DIR_LOG/$DAY.md
+}
+
+function generate_recent() {
+    # Take the 30 most recent entries and put them into a file called
+    # recent.md increasing every header that we see by one.
+    echo "# $title " > $DIR_SRC/recent.md
+    echo "## Recent Entries" >> $DIR_SRC/recent.md
+    find $DIR_SRC/*/ | \
+        grep \.md$ | \
+        sort -nr | \
+        head -n 30 | \
+        xargs -n 1  sed -e 's/^#/###/' -e '$a\\' >> $DIR_SRC/recent.md
+    echo "## Index" >> $DIR_SRC/recent.md
+    echo $DIR_SRC
+    find $DIR_SRC/*/ | \
+        grep \.md$ | \
+        sort -n | \
+        sed -e "s?$DIR_SRC/??" -e 's/\.md$/.html/' | \
+        xargs -n1 -IX echo "  - [X](X)" >> $DIR_SRC/recent.md
+}
+
+while getopts ":b:e:hot:" opt; do
+    case ${opt} in
+        b ) browser=$OPTARG
+            ;;
+        e ) editor=$OPTARG
+            ;;
+        h ) help
+            exit 0
+            ;;
+        o ) build
+            open &
+            exit 0
+            ;;
+        t ) title=$OPTARG
+            ;;
+        \?) echo "Unrecognized option '-$OPTARG'" >&2
+            echo "Try '${0##*/} -h' for more information."
+            exit 1
+            ;;
+        : ) echo "Option '-$OPTARG' requires an argument" >&2
+            echo "Try '${0##*/} -h' for more information."
+            exit 1
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+init $1
+
+echo "$title, date $YEAR-$MONTH-$DAY..."
+sleep 0.25
 
 # If the files don't exist, then create them
 if [ ! -e $LOG ]; then
     mkdir -p $DIR_LOG
     touch $LOG
-    echo "# $YEAR.$MONTH.$DAY | $WHOAMI" > $LOG
+    echo "# [$YEAR.$MONTH.$DAY] $WHOAMI" > $LOG
 fi
 $editor $LOG
 
-# Take the 30 most recent entries and put them into a file called
-# recent.md increasing every header that we see by one.
-echo "# Captain's Log " > $DIR_SRC/recent.md
-echo "--------------------" >> $DIR_SRC/recent.md
-echo "Recent Entries" >> $DIR_SRC/recent.md
-find $DIR_SRC/*/ | \
-    grep md$ | \
-    sort -nr | \
-    head -n 30 | \
-    xargs -n 1 sed -e 's/^#/##/' -e '$a\\' >> $DIR_SRC/recent.md
-
-# Rebuild the log
-make -C $DIR
+generate_recent
+build
