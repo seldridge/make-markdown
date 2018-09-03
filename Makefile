@@ -18,9 +18,11 @@ build_dir   = $(abs_top_dir)/build
 src_dir     = $(abs_top_dir)/src
 CSS         = $(src_dir)/ghf_marked.css
 pandoc_flags = \
-	-c $(src_dir)/ghf_marked.css \
+	-c $(src_dir)/github-markdown-css/github-markdown.css \
 	-s \
-	-f markdown_github
+	-f markdown_github \
+	-B $(src_dir)/before.html \
+  -A $(src_dir)/after.html
 
 SOURCES_MD  = $(shell find $(src_dir) -name \*.md$ | sed 's?$(src_dir)/??')
 
