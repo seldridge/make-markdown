@@ -3,56 +3,34 @@
 #
 # Point of Contact: Schuyler Eldridge <schuyler.eldridge@gmail.com>
 
-#--------------------------------------- Configuration that _should_ be static
-DIR_BUILD   = build
-DIR_SRC     = src
-DIR_SCRIPTS = scripts
-CSS         = $(DIR_SRC)/ghf_marked.css
+SHELL = bash
+abs_top_dir = $(PWD)
+build_dir   = $(abs_top_dir)/build
+src_dir     = $(abs_top_dir)/src
+CSS         = $(src_dir)/ghf_marked.css
+pandoc_flags = \
+	-c $(src_dir)/ghf_marked.css \
+	-s \
+	-f markdown_github
 
-# The sources are anything inside the src directory or in the
-# top-level directory (due to the way GitHub handles wikis) that
-# matches *.md
-SOURCES_MD  = $(shell find $(DIR_SRC) -regex .+\.md$ | sed 's/$(DIR_SRC)\///') \
-	$(shell find -maxdepth 1 -regex .+\.md$)
+SOURCES_MD  = $(shell find $(src_dir) -name \*.md$ | sed 's?$(src_dir)/??')
 
 # The targets are all the sources with an
-TARGETS_MD_PYGMENTIZE = $(SOURCES_MD:%.md=$(DIR_BUILD)/%.md.pygmentize)
-TARGETS_HTML = $(TARGETS_MD_PYGMENTIZE:%.md.pygmentize=%.html)
+TARGETS_HTML = $(SOURCES_MD:%.md=$(build_dir)/%.html)
+vpath %.md $(src_dir) .
 
-SPACE       = $(EMPTY) $(EMPTY)
+.PHONY: all clean
 
-vpath %.md $(DIR_SRC) .
+all: $(TARGETS_HTML)
 
+$(build_dir)/%.html: $(src_dir)/%.md Makefile | $(build_dir)
+	@if [ ! -d $(shell echo $@ | grep -o "^.\+/") ]; then echo $@ | grep -o "^.\+/" | xargs mkdir -p; fi
+	@pandoc $(pandoc_flags) $< > $@
+	@echo [info] gen $<
 
-#--------------------------------------- Build rules
-.PHONY: all clean refresh-conkeror
-
-# Default target.
-all: $(TARGETS_HTML) refresh-conkeror refresh-luakit
-
-# Pygmentize preprocessing
-$(DIR_BUILD)/%.md.pygmentize: %.md Makefile
-	if [ ! -d $(shell echo $@ | grep -o "^.\+/") ]; then echo $@ | grep -o "^.\+/" | xargs mkdir -p; fi
-	$(DIR_SCRIPTS)/scrub-pygmentize $< > $@
-
-# HTML build rule
-$(DIR_BUILD)/%.html: $(DIR_BUILD)/%.md.pygmentize Makefile
-	echo "<style>/*" > $@;
-	cat $(CSS) >> $@;
-	echo "</style><div class="md"><article>" >> $@;
-	$(DIR_SCRIPTS)/markdown-chooser $< >> $@
-
-# This will send key "r" to all instances of `conkeror` using the
-# `xdotool`. I like to keep `conkeror` running beside my `emacs`. This
-# will then cause the webpage to be forcibly updated at the end of the
-# build.
-refresh-conkeror:
-	if [[ `pidof -x conkeror` ]]; then \
-	xdotool search "conkeror" | xargs -I WIN xdotool key --window WIN r; fi
-
-refresh-luakit:
-	if [[ `pidof -x luakit` ]]; then \
-	xdotool search "luakit" | xargs -I WIN xdotool key --window WIN r; fi
+$(build_dir):
+	@mkdir $@
+	@echo [info] mkdir $@
 
 clean:
-	rm -rf $(DIR_BUILD)/*
+	rm -rf $(build_dir)
