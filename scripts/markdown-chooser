@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # Tries to find one of the following markdown interpreters in your
 # PATH. Otherwise, will fail.

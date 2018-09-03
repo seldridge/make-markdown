@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 
 # Acts as a front-end for storing daily notes.
 
