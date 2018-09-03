@@ -49,7 +49,7 @@ function open() {
 }
 
 function build() {
-    make -C $DIR
+    make abs_top_dir=$DIR -C $DIR
 }
 
 function init() {
