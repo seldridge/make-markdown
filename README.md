@@ -1,32 +1,50 @@
-Markdown Automation
-================================================================================
+# Markdown Automation
 
-This, at the most basic, is a Makefile-driven flow for generating a
-.html Markdown output from input .md sources. Anything that you put in
-the src directory will be converted to a corresponding file in build.
-This Makefile also respects whatever directory conventions you use in
-src, i.e., all subdirectories of src will be replicated in build.
+[![Build Status](https://travis-ci.org/seldridge/make-markdown.svg?branch=master)](https://travis-ci.org/seldridge/make-markdown)
 
-Included scripts:
+This is a Makefile-driven flow for generating a `.html` Markdown output
+from input `.md` with minimal dependencies (only `pandoc`). Anything that
+you put in the `src/` directory will be converted to a corresponding file
+in the `build/` directory when you type `make`. This basic flow is
+augmented with scripts that enable _more complex_ functionality (e.g., a
+daily log or a personal blog).
 
-### Captains Log - `scripts/captains-log`
+Known dependencies can be cleared (on Ubuntu) with:
+```bash
+apt install pandoc
+```
 
-Maintains a log of daily notes. This will create and maintain a
-captains-log/$YEAR/$MONTH directory structure in the src directory.
-One log is used per day and will populate the $MONTH subdirectory.
-Your default $EDITOR is used to edit the current log. Before exiting,
-`captains-log` creates a recent log (from the past 30 log entries) and
-dumps this in captains-log/recent.md. It then runs `make` to convert
-all the log *.md to *.html.
+### Scripts
 
-### Markdown Chooser - `scripts/markdown-chooser`
+The `scripts/` directory provides scripts that enable _more complex_
+functionality beyond basic Markdown to HTML conversion. Available scripts
+are detailed below.
 
-Used by the Makefile to try and find either `marked` (part of
-[marked](https://github.com/chjj/marked)) or `markdown` (see
-[Daring Fireball Markdown](http://daringfireball.net/projects/markdown/)).
-This consequently depends on you having one of these available in your
-$PATH.
+#### Captains Log: [`scripts/captains-log`](scripts/captains-log)
 
-### Pygmentize Helper - `scripts/scrub-pygmentize`
+This provides very basic blog-like functionality. The original intent of
+this script is to provide a quick way to keep track of a daily work log.
 
-Syntax highlighting is unsupported from the CLI of `marked` and `markdown` has no support for this. Syntax highlighting is accomplished with a special script that will look for any code blocks in the source markdown files and use [Pygments](http://pygments.org/) to replace them with colorized HTML regions.
+Calling this with no arguments will open your `$EDITOR` to edit a file in
+`src/captains-log/YYYY/MM/DD.md`. If the file does not exist, it will be
+created with a boilerplate title. Upon closing this editor, all markdown
+is converted to HTML in `build/captains-log/*` and a summary file
+`build/captains-log/recent.html` that contains flattened recent entries a
+flat index of all logs.
+
+The contents of `build/captains-log` are then suitable for a daily log of
+work or as a blog you can publish.
+
+Full usage text is shown below:
+```
+Usage: captains-log [OPTION]... [DATE]
+Open a Captain's Log for the DATE (today by default). DATE format must be
+YYYY-MM-DD.
+
+Options:
+  -b BROWSER                 use BROWSER with the -o option
+  -e EDITOR                  use EDITOR to open the file (default: '$EDITOR')
+  -h                         show this help text
+  -o                         open summary in a browser (default: '$BROWSER')
+  -t TITLE                   use TITLE for log title (default: 'Captain's Log')
+```
