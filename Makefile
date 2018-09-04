@@ -37,11 +37,11 @@ all: $(TARGETS_HTML)
 $(build_dir)/%.html: $(src_dir)/%.md Makefile | $(build_dir)
 	@if [ ! -d $(shell echo $@ | grep -o "^.\+/") ]; then echo $@ | grep -o "^.\+/" | xargs mkdir -p; fi
 	@pandoc $(pandoc_flags) $< > $@
-	@echo [info] gen $<
+	@echo "[info] gen $<"
 
 $(build_dir):
 	@mkdir $@
-	@echo [info] mkdir $@
+	@echo "[info] mkdir $@"
 
 clean:
 	rm -rf $(build_dir)

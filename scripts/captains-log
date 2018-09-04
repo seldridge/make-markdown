@@ -49,6 +49,7 @@ function open() {
 }
 
 function build() {
+    echo "[info] Make it so..."
     make abs_top_dir=$DIR -C $DIR
 }
 
@@ -95,7 +96,6 @@ function generate_recent() {
         head -n 30 | \
         xargs -n 1  sed -e 's/^#/###/' -e '$a\\' >> $DIR_SRC/recent.md
     echo "## Index" >> $DIR_SRC/recent.md
-    echo $DIR_SRC
     find $DIR_SRC/*/ | \
         grep \.md$ | \
         sort -n | \
@@ -131,7 +131,7 @@ done
 shift $((OPTIND-1))
 init $1
 
-echo "$title, date $YEAR-$MONTH-$DAY..."
+echo "[info] $title, date $YEAR-$MONTH-$DAY..."
 sleep 0.25
 
 # If the files don't exist, then create them
