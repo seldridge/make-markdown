@@ -19,7 +19,6 @@
 # Top level configuration
 title="Captain's Log"
 editor=$EDITOR
-browser=$BROWSER
 
 # Query `date` to get the year, month, and day. This has a built in
 # offset to try and keep things grouped by working days.
@@ -36,21 +35,28 @@ Open a Captain's Log for the DATE (today by default). DATE format must be
 YYYY-MM-DD.
 
 Options:
-  -b BROWSER                 use BROWSER with the -o option
   -e EDITOR                  use EDITOR to open the file (default: '\$EDITOR')
   -h                         show this help text
-  -o                         open summary in a browser (default: '\$BROWSER')
+  -o                         open summary using xdg-open
   -t TITLE                   use TITLE for log title (default: '$title')
 EOF
 }
 
+function info() {
+    if [ `command -v notify-send` ]; then
+        notify-send -u low -t 1000 "$1"
+    else
+        echo "[info] $1"
+    fi
+}
+
 function open() {
-    $BROWSER $DIR/build/captains-log/recent.html
+    xdg-open $DIR/build/captains-log/recent.html > /dev/null
 }
 
 function build() {
-    echo "[info] Make it so..."
-    make abs_top_dir=$DIR -C $DIR
+    info "Make it so..."
+    make abs_top_dir=$DIR -C $DIR -s
 }
 
 function init() {
@@ -105,8 +111,6 @@ function generate_recent() {
 
 while getopts ":b:e:hot:" opt; do
     case ${opt} in
-        b ) browser=$OPTARG
-            ;;
         e ) editor=$OPTARG
             ;;
         h ) help
@@ -131,14 +135,15 @@ done
 shift $((OPTIND-1))
 init $1
 
-echo "[info] $title, date $YEAR-$MONTH-$DAY..."
-sleep 0.25
 
 # If the files don't exist, then create them
 if [ ! -e $LOG ]; then
     mkdir -p $DIR_LOG
     touch $LOG
     echo "# [$YEAR.$MONTH.$DAY] $WHOAMI" > $LOG
+    info "$title, date $YEAR-$MONTH-$DAY..."
+else
+    info "$title, supplemental..."
 fi
 $editor $LOG
 
