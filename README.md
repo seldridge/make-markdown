@@ -1,5 +1,7 @@
 # Markdown Automation
 
+test
+
 [![Build Status](https://travis-ci.org/seldridge/make-markdown.svg?branch=master)](https://travis-ci.org/seldridge/make-markdown)
 
 This is a Makefile-driven flow for generating a `.html` Markdown output
